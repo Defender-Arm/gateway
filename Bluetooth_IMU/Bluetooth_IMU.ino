@@ -3,12 +3,12 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
 
-Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28); // I2C address 0x28 for BNO055
-BluetoothSerial SerialBT;  // Instantiate Bluetooth serial object
+Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28);
+BluetoothSerial SerialBT;
 
 void setup() {
-    Serial.begin(115200);      // Start Serial for monitoring
-    SerialBT.begin("ESP32_BT"); // Start Bluetooth with a name (e.g., "ESP32_BT")
+    Serial.begin(115200);
+    SerialBT.begin("ESP32_BT");
     Serial.println("Bluetooth started! Connect to 'ESP32_BT'");
 
     if (!bno.begin()) {
@@ -16,24 +16,21 @@ void setup() {
         while (1);
     }
 
-    delay(1000); // Allow time for sensor to initialize
-    bno.setExtCrystalUse(true); // Use external crystal for accuracy
+    delay(1000);
+    bno.setExtCrystalUse(true);
 }
 
 void loop() {
-    // Sensor data retrieval
-    sensors_event_t linearAccelData;
-    bno.getEvent(&linearAccelData, Adafruit_BNO055::VECTOR_LINEARACCEL);
+    sensors_event_t accelData;
+    bno.getEvent(&accelData, Adafruit_BNO055::VECTOR_LINEARACCEL);
 
-    // Send linear acceleration data only, formated with each value separated by ','
-    SerialBT.print(linearAccelData.acceleration.x);
-    SerialBT.print(",");
-    SerialBT.print(linearAccelData.acceleration.y);
-    SerialBT.print(",");
-    SerialBT.println(linearAccelData.acceleration.z);
-
-    delay(500); // Send data every 500ms
+    // Send raw binary data (3 floats)
+    SerialBT.write((uint8_t*)&accelData.acceleration.x, sizeof(float));
+    SerialBT.write((uint8_t*)&accelData.acceleration.y, sizeof(float));
+    SerialBT.write((uint8_t*)&accelData.acceleration.z, sizeof(float));
+    // delay(500); // Wait 0.5 seconds before repeating
 }
+
 
     // // Sensor data retrieval
     // sensors_event_t orientationData, linearAccelData;
